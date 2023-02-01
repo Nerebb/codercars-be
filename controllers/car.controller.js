@@ -15,7 +15,15 @@ carController.createCar = async (req, res, next) => {
   ];
   try {
     if (!req.body) throw new AppError(400, "Bad Request", "Create Car Error");
-	if(!requiredField.includes(Object.keys(req.body))) throw new AppError (400,"Bad Request Missing field","Create Car field missing")
+
+    requiredField.forEach((field) => {
+      if (!Object.keys(req.body).includes(field))
+        throw new AppError(
+          400,
+          "Bad Request Missing field",
+          "Create Car missing field"
+        );
+    });
 
     const created = await Car.create(req.body);
     created.isDelete = false;
@@ -52,9 +60,18 @@ carController.getCars = async (req, res, next) => {
 carController.editCar = async (req, res, next) => {
   try {
     const { id } = req.params;
-    if (!id) throw new AppError("Car ID not valid");
+    if (!id)
+      throw new AppError(
+        400,
+        "Bad request Car ID not valid",
+        "Car ID not valid"
+      );
     if (!req.body || !Object.keys(req.body) > 0)
-      throw new AppError("Car updated field not found");
+      throw new AppError(
+        400,
+        "Bad Request Car not found",
+        "Car updated field not found"
+      );
 
     let updatedCar = await Car.findByIdAndUpdate(
       id,
@@ -88,7 +105,7 @@ carController.deleteCar = async (req, res, next) => {
     );
 
     if (deletedCar === null)
-      throw new AppError(400, "Bad Request", "Car not found!");
+      throw new AppError(400, "Bad Request Car not found", "Car not found");
 
     sendResponse(
       res,
