@@ -1,37 +1,106 @@
-const mongoose = require('mongoose');
-const Car = require('../models/Car');
+const mongoose = require("mongoose");
+const Car = require("../models/Car");
+const { sendResponse, AppError } = require("../helpers/utils.js");
 const carController = {};
 
 carController.createCar = async (req, res, next) => {
-	try {
-		// YOUR CODE HERE
-	} catch (err) {
-		// YOUR CODE HERE
-	}
+  const requiredField = [
+    "make",
+    "model",
+    "release_date",
+    "transmission_type",
+    "size",
+    "style",
+    "price",
+  ];
+  try {
+    if (!req.body) throw new AppError(400, "Bad Request", "Create Car Error");
+	if(!requiredField.includes(Object.keys(req.body))) throw new AppError (400,"Bad Request Missing field","Create Car field missing")
+
+    const created = await Car.create(req.body);
+    created.isDelete = false;
+
+    sendResponse(res, 200, true, { car: created }, null, "Create Car Success");
+  } catch (err) {
+    next(err);
+  }
 };
 
 carController.getCars = async (req, res, next) => {
-	try {
-		// YOUR CODE HERE
-	} catch (err) {
-		// YOUR CODE HERE
-	}
+  const { page, limit } = req.query;
+  try {
+    const carDb = await Car.find();
+
+    let pageInt = parseInt(page) || 1;
+    let limitInt = parseInt(limit) || 10;
+    let offset = limitInt * (pageInt - 1);
+    let displayCar = carDb.slice(offset, offset + limitInt);
+    let total = parseInt(carDb.length / limitInt);
+    sendResponse(
+      res,
+      200,
+      true,
+      { cars: displayCar, page, total },
+      null,
+      `Get cars list page:${pageInt} success`
+    );
+  } catch (err) {
+    next(err);
+  }
 };
 
 carController.editCar = async (req, res, next) => {
-	try {
-		// YOUR CODE HERE
-	} catch (err) {
-		// YOUR CODE HERE
-	}
+  try {
+    const { id } = req.params;
+    if (!id) throw new AppError("Car ID not valid");
+    if (!req.body || !Object.keys(req.body) > 0)
+      throw new AppError("Car updated field not found");
+
+    let updatedCar = await Car.findByIdAndUpdate(
+      id,
+      { ...req.body },
+      { new: true }
+    );
+
+    sendResponse(
+      res,
+      200,
+      true,
+      { car: updatedCar },
+      null,
+      `Update Car Successfully`
+    );
+  } catch (err) {
+    next(err);
+  }
 };
 
 carController.deleteCar = async (req, res, next) => {
-	try {
-		// YOUR CODE HERE
-	} catch (err) {
-		// YOUR CODE HERE
-	}
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id))
+      throw new AppError(400, "Bad Request", "Create Car Error");
+
+    const deletedCar = await Car.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true, runValidators: true }
+    );
+
+    if (deletedCar === null)
+      throw new AppError(400, "Bad Request", "Car not found!");
+
+    sendResponse(
+      res,
+      200,
+      true,
+      { car: deletedCar },
+      null,
+      `Update Car Successfully`
+    );
+  } catch (err) {
+    next(err);
+  }
 };
 
 module.exports = carController;
