@@ -44,6 +44,7 @@ carController.getCars = async (req, res, next) => {
     let offset = limitInt * (pageInt - 1);
     let displayCar = carDb.slice(offset, offset + limitInt);
     let total = parseInt(carDb.length / limitInt);
+
     sendResponse(
       res,
       200,
