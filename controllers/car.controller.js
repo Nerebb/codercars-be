@@ -59,20 +59,16 @@ carController.getCars = async (req, res, next) => {
 };
 
 carController.editCar = async (req, res, next) => {
+  const updatedValue = req.body;
+  const { id } = req.params;
   try {
-    const { id } = req.params;
-    if (!id)
-      throw new AppError(
-        400,
-        "Bad request Car ID not valid",
-        "Car ID not valid"
-      );
-    if (!req.body || !Object.keys(req.body) > 0)
-      throw new AppError(
-        400,
-        "Bad Request Car not found",
-        "Car updated field not found"
-      );
+    if (!id) throw new AppError(400, "Bad request Car ID not valid");
+
+    if (!mongoose.isValidObjectId(id))
+      throw new AppError(400, "Object ID Not valid");
+
+    if (!req.body || !Object.keys(updatedValue).length > 0)
+      throw new AppError(400, "Car updated field not found");
 
     let updatedCar = await Car.findByIdAndUpdate(
       id,
