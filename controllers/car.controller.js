@@ -93,6 +93,8 @@ carController.deleteCar = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id))
+      throw new AppError(400, "Invalid Car ID");
+    if (!mongoose.isValidObjectId(id))
       throw new AppError(400, "Bad Request", "Create Car Error");
 
     const deletedCar = await Car.findByIdAndUpdate(
